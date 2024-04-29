@@ -1,99 +1,36 @@
 using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Net.Http;
-using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using Mood.Models;
+using Newtonsoft.Json;
 
 namespace Mood
 {
     public class SpotifyClient
     {
-        private static string _CLIENT_ID;
-        private static string _REDIRECT_URI;
-        private static string _AUTH_URL;
-        private static string _TOKEN_URL;
-
-        public SpotifyClient()
-        {
-            _CLIENT_ID = Constants.CLIENT_ID;
-            _REDIRECT_URI = Constants.REDIRECT_URI;
-            _AUTH_URL = Constants.AUTH_URL;
-            _TOKEN_URL = Constants.TOKEN_URL;
-        }
-
-        public async Task<Dictionary<string, string>> Authorize()
-        {
-            var codeVerifier = GenerateCodeVerifier();
-            var codeChallenge = GenerateCodeChallenge(codeVerifier);
-            
-            var authParams = new Dictionary<string, string>
-            {
-                { "client_id", _CLIENT_ID },
-                { "response_type", "code" },
-                { "redirect_uri", _REDIRECT_URI },
-                { "scope", "user-top-read" },
-                { "code_challenge_method", "S256" },
-                { "code_challenge", codeChallenge }
-            };
-            
-            var authUrl = $"{_AUTH_URL}?{ToQueryString(authParams)}";
-            Console.WriteLine("Please go to this URL and authorize the application: " + authUrl);
-            
-            var listener = new HttpListener();
-            listener.Prefixes.Add(_REDIRECT_URI + "/");
-            listener.Start();
-            
-            var context = await listener.GetContextAsync();
-            var authorizationCode = context.Request.QueryString["code"];
-            Console.WriteLine("Authorization code retrieved successfully: " + authorizationCode);
-            
-            listener.Stop();
-            
-            var tokenData = new Dictionary<string, string>
-            {
-                { "client_id", _CLIENT_ID },
-                { "grant_type", "authorization_code" },
-                { "code_verifier", codeVerifier },
-                { "code", authorizationCode },
-                { "redirect_uri", _REDIRECT_URI }
-            };
-            
-            return tokenData;
-        }
-
-        public async Task<List<Track>> GetTopTracks(Dictionary<string, string> tokenData)
+        private static string _ADD_TRACKS_TO_PLAYLIST_URL;
+        
+        public async Task<List<Track>> GetMoodPlaylist()
         {
             var client = new HttpClient();
-            var response = await client.PostAsync(_TOKEN_URL, new FormUrlEncodedContent(tokenData));
-            var responseString = await response.Content.ReadAsStringAsync();
-            dynamic responseData = Newtonsoft.Json.JsonConvert.DeserializeObject(responseString);
-
-            var accessToken = responseData.access_token;
-
-            client.DefaultRequestHeaders.Add("Authorization", "Bearer " + accessToken);
-
-            var topTracksUrl = "https://api.spotify.com/v1/me/top/tracks?limit=50";
+            client.DefaultRequestHeaders.Add("Authorization", "Bearer " + Constants.ACCESS_TOKEN);
+            
+            var topTracksUrl = Constants.TOP_TRACKS_URL;
             var topTracksResponse = await client.GetAsync(topTracksUrl);
             var topTracksString = await topTracksResponse.Content.ReadAsStringAsync();
-            dynamic topTracksData = Newtonsoft.Json.JsonConvert.DeserializeObject(topTracksString);
+            dynamic topTracksData = JsonConvert.DeserializeObject(topTracksString);
 
             var tracks = new List<Track>();
 
             foreach (var track in topTracksData.items)
             {
-                var tracksFeaturesUrl = $"https://api.spotify.com/v1/audio-features/{track.id}";
-                var tracksFeaturesResponse = await client.GetAsync(tracksFeaturesUrl);
-                var tracksFeaturesString = await tracksFeaturesResponse.Content.ReadAsStringAsync();
-                dynamic tracksFeaturesData = Newtonsoft.Json.JsonConvert.DeserializeObject(tracksFeaturesString);
                 var newTrack = new Track
                 {
                     Name = track.name,
                     Artist = track.artists[0].name,
-                    ID = track.id,
-                    Valence = tracksFeaturesData.valence
+                    ID = track.id
                 };
                 tracks.Add(newTrack);
             }
@@ -101,44 +38,47 @@ namespace Mood
             return tracks;
         }
 
-        static string ToQueryString(Dictionary<string, string> dict)
+        public async Task<string> CreatePlaylist(string playlistName)
         {
-            var array = new List<string>();
-            foreach (var kvp in dict)
+            Console.WriteLine(Constants.CREATE_PLAYLIST_URL);
+            using (var client = new HttpClient())
             {
-                array.Add($"{kvp.Key}={kvp.Value}");
-            }
-            return string.Join("&", array);
-        }
+                client.DefaultRequestHeaders.Add("Authorization", "Bearer " + Constants.ACCESS_TOKEN);
+                var playlistData = new Dictionary<string, string>
+                {
+                    { "name", playlistName },
+                    { "description", "New playlist description" },
+                    { "public", "false" }
+                };
+                
+                var jsonContent = JsonConvert.SerializeObject(playlistData);
+                
+                var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
 
-        static string GenerateCodeVerifier()
-        {
-            var random = new byte[32];
-            using (var rng = RandomNumberGenerator.Create())
-            {
-                rng.GetBytes(random);
-            }
-            return Base64UrlEncode(random);
-        }
-
-        static string GenerateCodeChallenge(string codeVerifier)
-        {
-            using (var sha256 = SHA256.Create())
-            {
-                var challengeBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(codeVerifier));
-                return Base64UrlEncode(challengeBytes);
+                var response = await client.PostAsync(Constants.CREATE_PLAYLIST_URL, content);
+                var responseString = await response.Content.ReadAsStringAsync();
+                dynamic responseData = JsonConvert.DeserializeObject(responseString);
+                
+                return responseData.id;
             }
         }
-
-        static string Base64UrlEncode(byte[] bytes)
+        
+        public async Task AddTracksToPlaylist(string playlist_id, List<Track> tracks)
         {
-            return Convert.ToBase64String(bytes)
-                .Replace('+', '-')
-                .Replace('/', '_')
-                .Replace("=", "");
+            _ADD_TRACKS_TO_PLAYLIST_URL = $"https://api.spotify.com/v1/playlists/{playlist_id}/tracks";
+            
+            using (var client = new HttpClient())
+            {
+                client.DefaultRequestHeaders.Add("Authorization", "Bearer " + Constants.ACCESS_TOKEN);
+                var trackUris = new List<string>();
+                foreach (var track in tracks)
+                {
+                    trackUris.Add($"spotify:track:{track.ID}");
+                }
+                var requestData = new { uris = trackUris };
+                var response = await client.PostAsync(_ADD_TRACKS_TO_PLAYLIST_URL, new StringContent(JsonConvert.SerializeObject(requestData), Encoding.UTF8, "application/json"));
+                response.EnsureSuccessStatusCode();
+            }
         }
     }
 }
-
-
-
