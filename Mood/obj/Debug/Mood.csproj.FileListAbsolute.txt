@@ -1,0 +1,16 @@
+/Users/senyasaysmeow/RiderProjects/Mood/Mood/bin/Debug/Mood.exe
+/Users/senyasaysmeow/RiderProjects/Mood/Mood/bin/Debug/Mood.pdb
+/Users/senyasaysmeow/RiderProjects/Mood/Mood/bin/Debug/Newtonsoft.Json.dll
+/Users/senyasaysmeow/RiderProjects/Mood/Mood/bin/Debug/System.IO.dll
+/Users/senyasaysmeow/RiderProjects/Mood/Mood/bin/Debug/System.Net.Http.dll
+/Users/senyasaysmeow/RiderProjects/Mood/Mood/bin/Debug/System.Runtime.dll
+/Users/senyasaysmeow/RiderProjects/Mood/Mood/bin/Debug/System.Security.Cryptography.Algorithms.dll
+/Users/senyasaysmeow/RiderProjects/Mood/Mood/bin/Debug/System.Security.Cryptography.Encoding.dll
+/Users/senyasaysmeow/RiderProjects/Mood/Mood/bin/Debug/System.Security.Cryptography.Primitives.dll
+/Users/senyasaysmeow/RiderProjects/Mood/Mood/bin/Debug/System.Security.Cryptography.X509Certificates.dll
+/Users/senyasaysmeow/RiderProjects/Mood/Mood/bin/Debug/Newtonsoft.Json.xml
+/Users/senyasaysmeow/RiderProjects/Mood/Mood/obj/Debug/Mood.csproj.AssemblyReference.cache
+/Users/senyasaysmeow/RiderProjects/Mood/Mood/obj/Debug/Mood.csproj.CoreCompileInputs.cache
+/Users/senyasaysmeow/RiderProjects/Mood/Mood/obj/Debug/Mood.csproj.CopyComplete
+/Users/senyasaysmeow/RiderProjects/Mood/Mood/obj/Debug/Mood.exe
+/Users/senyasaysmeow/RiderProjects/Mood/Mood/obj/Debug/Mood.pdb
