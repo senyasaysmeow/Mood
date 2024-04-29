@@ -24,11 +24,11 @@ namespace Mood
             _TOKEN_URL = Constants.TOKEN_URL;
         }
 
-        public async Task<List<Track>> GetTopTracks()
+        public async Task<Dictionary<string, string>> Authorize()
         {
             var codeVerifier = GenerateCodeVerifier();
             var codeChallenge = GenerateCodeChallenge(codeVerifier);
-
+            
             var authParams = new Dictionary<string, string>
             {
                 { "client_id", _CLIENT_ID },
@@ -38,20 +38,20 @@ namespace Mood
                 { "code_challenge_method", "S256" },
                 { "code_challenge", codeChallenge }
             };
-
+            
             var authUrl = $"{_AUTH_URL}?{ToQueryString(authParams)}";
             Console.WriteLine("Please go to this URL and authorize the application: " + authUrl);
-
+            
             var listener = new HttpListener();
             listener.Prefixes.Add(_REDIRECT_URI + "/");
             listener.Start();
-
+            
             var context = await listener.GetContextAsync();
             var authorizationCode = context.Request.QueryString["code"];
             Console.WriteLine("Authorization code retrieved successfully: " + authorizationCode);
-
+            
             listener.Stop();
-
+            
             var tokenData = new Dictionary<string, string>
             {
                 { "client_id", _CLIENT_ID },
@@ -60,7 +60,12 @@ namespace Mood
                 { "code", authorizationCode },
                 { "redirect_uri", _REDIRECT_URI }
             };
+            
+            return tokenData;
+        }
 
+        public async Task<List<Track>> GetTopTracks(Dictionary<string, string> tokenData)
+        {
             var client = new HttpClient();
             var response = await client.PostAsync(_TOKEN_URL, new FormUrlEncodedContent(tokenData));
             var responseString = await response.Content.ReadAsStringAsync();

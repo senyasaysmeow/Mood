@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Mood
@@ -8,12 +9,12 @@ namespace Mood
         static async Task Main(string[] args)
         {
             SpotifyClient sp = new SpotifyClient();
-            var tracks = await sp.GetTopTracks();
-            
+            Dictionary<string, string> token = await sp.Authorize();
+            var tracks = await sp.GetTopTracks(token);
             Console.WriteLine("Top Tracks:");
             foreach (var track in tracks)
             {
-                Console.WriteLine($"{track.Name} by {string.Join(", ", track.Artist)} {string.Join(", ", track.Valence)}");
+                Console.WriteLine($"{track.Name} by {track.Artist}  {track.Valence}");
             }
         }
     }
