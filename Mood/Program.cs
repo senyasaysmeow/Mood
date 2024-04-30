@@ -8,13 +8,11 @@ namespace Mood
         static async Task Main(string[] args)
         {
             SpotifyClient sp = new SpotifyClient();
-            
-            var tracks = await sp.GetMoodPlaylist();
-            foreach (var track in tracks)
-            {
-                Console.WriteLine($"{track.Name} by {track.Artist}");
-            }
-            var pl = await sp.CreatePlaylist("my");
+            Console.Write("Enter your mood(0.0 -> 1.0): ");
+            float mood = float.Parse(Console.ReadLine());
+            var tracks = await sp.GetMoodPlaylist(mood);
+            var pl = await sp.CreatePlaylist($"mood {mood}");
+            Console.WriteLine($"https://open.spotify.com/playlist/{pl}");
             await sp.AddTracksToPlaylist(pl, tracks);
         }
     }

@@ -10,40 +10,74 @@ namespace Mood
 {
     public class SpotifyClient
     {
-        private static string _ADD_TRACKS_TO_PLAYLIST_URL;
-        
-        public async Task<List<Track>> GetMoodPlaylist()
+        public async Task<List<Track>> GetMoodPlaylist(float mood)
         {
-            var client = new HttpClient();
-            client.DefaultRequestHeaders.Add("Authorization", "Bearer " + Constants.ACCESS_TOKEN);
-            
-            var topTracksUrl = Constants.TOP_TRACKS_URL;
-            var topTracksResponse = await client.GetAsync(topTracksUrl);
-            var topTracksString = await topTracksResponse.Content.ReadAsStringAsync();
-            dynamic topTracksData = JsonConvert.DeserializeObject(topTracksString);
-
-            var tracks = new List<Track>();
-
-            foreach (var track in topTracksData.items)
+            using (var client = new HttpClient())
             {
-                var newTrack = new Track
-                {
-                    Name = track.name,
-                    Artist = track.artists[0].name,
-                    ID = track.id
-                };
-                tracks.Add(newTrack);
-            }
+                client.DefaultRequestHeaders.Add("Authorization", "Bearer " + Constants.ACCESS_TOKEN);
+                var topTracksUrl = "https://api.spotify.com/v1/me/top/tracks?limit=20";
+                var topTracksResponse = await client.GetAsync(topTracksUrl);
+                var topTracksString = await topTracksResponse.Content.ReadAsStringAsync();
+                dynamic topTracksData = JsonConvert.DeserializeObject(topTracksString);
 
-            return tracks;
+                var tracks = new List<Track>();
+
+                foreach (var track in topTracksData.items)
+                {
+                    var audioFeaturesUrl = $"https://api.spotify.com/v1/audio-features/{track.id}";
+                    var audioFeaturesResponse = await client.GetAsync(audioFeaturesUrl);
+                    var audioFeaturesString = await audioFeaturesResponse.Content.ReadAsStringAsync();
+                    dynamic audioFeaturesData = JsonConvert.DeserializeObject(audioFeaturesString);
+                    
+                    var newTrack = new Track
+                    {
+                        Name = track.name,
+                        Artist = track.artists[0].name,
+                        ID = track.id,
+                        Valence = audioFeaturesData.valence
+                    };
+
+                    if (mood >= 0.5)
+                    {
+                        if (newTrack.Valence >= 0.5)
+                        {
+                            tracks.Add(newTrack);
+                            Console.WriteLine($"+ {newTrack.Name} by {newTrack.Artist} {newTrack.Valence}");
+                        }
+                        else
+                        {
+                            Console.WriteLine($"- {newTrack.Name} by {newTrack.Artist} {newTrack.Valence}");
+                        }
+                    }
+                    else
+                    {
+                        if (newTrack.Valence <= 0.5)
+                        {
+                            tracks.Add(newTrack);
+                            Console.WriteLine($"+ {newTrack.Name} by {newTrack.Artist} {newTrack.Valence}");
+                        }
+                        else
+                        {
+                            Console.WriteLine($"- {newTrack.Name} by {newTrack.Artist} {newTrack.Valence}");
+                        }
+                    }
+                    
+                }
+
+                return tracks;
+            }
         }
 
         public async Task<string> CreatePlaylist(string playlistName)
         {
-            Console.WriteLine(Constants.CREATE_PLAYLIST_URL);
             using (var client = new HttpClient())
             {
                 client.DefaultRequestHeaders.Add("Authorization", "Bearer " + Constants.ACCESS_TOKEN);
+                var userInfoUrl = "https://api.spotify.com/v1/me/";
+                var userInfoResponse = await client.GetAsync(userInfoUrl);
+                var userInfoString = await userInfoResponse.Content.ReadAsStringAsync();
+                dynamic userInfoData = JsonConvert.DeserializeObject(userInfoString);
+                
                 var playlistData = new Dictionary<string, string>
                 {
                     { "name", playlistName },
@@ -55,7 +89,7 @@ namespace Mood
                 
                 var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
 
-                var response = await client.PostAsync(Constants.CREATE_PLAYLIST_URL, content);
+                var response = await client.PostAsync($"https://api.spotify.com/v1/users/{userInfoData.id}/playlists", content);
                 var responseString = await response.Content.ReadAsStringAsync();
                 dynamic responseData = JsonConvert.DeserializeObject(responseString);
                 
@@ -65,8 +99,6 @@ namespace Mood
         
         public async Task AddTracksToPlaylist(string playlist_id, List<Track> tracks)
         {
-            _ADD_TRACKS_TO_PLAYLIST_URL = $"https://api.spotify.com/v1/playlists/{playlist_id}/tracks";
-            
             using (var client = new HttpClient())
             {
                 client.DefaultRequestHeaders.Add("Authorization", "Bearer " + Constants.ACCESS_TOKEN);
@@ -76,7 +108,7 @@ namespace Mood
                     trackUris.Add($"spotify:track:{track.ID}");
                 }
                 var requestData = new { uris = trackUris };
-                var response = await client.PostAsync(_ADD_TRACKS_TO_PLAYLIST_URL, new StringContent(JsonConvert.SerializeObject(requestData), Encoding.UTF8, "application/json"));
+                var response = await client.PostAsync($"https://api.spotify.com/v1/playlists/{playlist_id}/tracks", new StringContent(JsonConvert.SerializeObject(requestData), Encoding.UTF8, "application/json"));
                 response.EnsureSuccessStatusCode();
             }
         }
