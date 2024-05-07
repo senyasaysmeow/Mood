@@ -15,7 +15,7 @@ namespace Mood
             using (var client = new HttpClient())
             {
                 client.DefaultRequestHeaders.Add("Authorization", "Bearer " + Constants.ACCESS_TOKEN);
-                var topTracksUrl = "https://api.spotify.com/v1/me/top/tracks?limit=20";
+                var topTracksUrl = "https://api.spotify.com/v1/playlists/1zL3yEfVKNkCfdLjqL38Zo/tracks";
                 var topTracksResponse = await client.GetAsync(topTracksUrl);
                 var topTracksString = await topTracksResponse.Content.ReadAsStringAsync();
                 dynamic topTracksData = JsonConvert.DeserializeObject(topTracksString);
@@ -24,16 +24,16 @@ namespace Mood
 
                 foreach (var track in topTracksData.items)
                 {
-                    var audioFeaturesUrl = $"https://api.spotify.com/v1/audio-features/{track.id}";
+                    var audioFeaturesUrl = $"https://api.spotify.com/v1/audio-features/{track.track.id}";
                     var audioFeaturesResponse = await client.GetAsync(audioFeaturesUrl);
                     var audioFeaturesString = await audioFeaturesResponse.Content.ReadAsStringAsync();
                     dynamic audioFeaturesData = JsonConvert.DeserializeObject(audioFeaturesString);
                     
                     var newTrack = new Track
                     {
-                        Name = track.name,
-                        Artist = track.artists[0].name,
-                        ID = track.id,
+                        Name = track.track.name,
+                        Artist = track.track.artists[0].name,
+                        ID = track.track.id,
                         Valence = audioFeaturesData.valence
                     };
 
