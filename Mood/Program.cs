@@ -27,13 +27,15 @@ namespace Mood
                     await botClient.SendTextMessageAsync(message.Chat.Id, $"To authenticate with Spotify click the link below:\n{sp.getLink()}");
                     await sp.AUTH();
                     await botClient.SendTextMessageAsync(message.Chat.Id, $"Authorization Successful!");
-                    await botClient.SendTextMessageAsync(message.Chat.Id, $"Now describe your mood on a scale from 0.0 to 1.0!");
+                    await botClient.SendTextMessageAsync(message.Chat.Id, $"Now describe your mood on a scale from 0.0 to 1.0 :)");
                 }
                 else if (float.TryParse(message.Text, out float mood) && mood >= 0.0 && mood <= 1.0)
                 {
+                    var sentMassage = await botClient.SendTextMessageAsync(message.Chat.Id, $"Creating your playlist...");
                     var tracks = await sp.GetMoodPlaylist(mood);
                     var pl = await sp.CreatePlaylist($"mood {mood}");
                     await sp.AddTracksToPlaylist(pl, tracks);
+                    await botClient.DeleteMessageAsync(message.Chat.Id, sentMassage.MessageId);
                     await botClient.SendTextMessageAsync(message.Chat.Id, $"Playlist created based on your mood:\nhttps://open.spotify.com/playlist/{pl}");
                 }
             }
