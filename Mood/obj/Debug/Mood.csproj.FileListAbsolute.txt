@@ -14,3 +14,13 @@
 /Users/senyasaysmeow/RiderProjects/Mood/Mood/obj/Debug/Mood.csproj.CopyComplete
 /Users/senyasaysmeow/RiderProjects/Mood/Mood/obj/Debug/Mood.exe
 /Users/senyasaysmeow/RiderProjects/Mood/Mood/obj/Debug/Mood.pdb
+/Users/senyasaysmeow/RiderProjects/Mood/Mood/bin/Debug/Mood.exe.config
+/Users/senyasaysmeow/RiderProjects/Mood/Mood/bin/Debug/System.ComponentModel.Annotations.dll
+/Users/senyasaysmeow/RiderProjects/Mood/Mood/bin/Debug/System.Runtime.CompilerServices.Unsafe.dll
+/Users/senyasaysmeow/RiderProjects/Mood/Mood/bin/Debug/System.Threading.Tasks.Extensions.dll
+/Users/senyasaysmeow/RiderProjects/Mood/Mood/bin/Debug/Telegram.Bot.dll
+/Users/senyasaysmeow/RiderProjects/Mood/Mood/bin/Debug/System.Runtime.CompilerServices.Unsafe.xml
+/Users/senyasaysmeow/RiderProjects/Mood/Mood/bin/Debug/System.Threading.Tasks.Extensions.xml
+/Users/senyasaysmeow/RiderProjects/Mood/Mood/bin/Debug/Telegram.Bot.pdb
+/Users/senyasaysmeow/RiderProjects/Mood/Mood/bin/Debug/Telegram.Bot.xml
+/Users/senyasaysmeow/RiderProjects/Mood/Mood/obj/Debug/Mood.exe.config

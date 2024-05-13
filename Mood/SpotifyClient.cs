@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,6 +11,82 @@ namespace Mood
 {
     public class SpotifyClient
     {
+        public async Task AUTH()
+        {
+            var authorizationCode = await GetAuthorizationCodeAsync();
+            var accessToken = await GetAccessTokenAsync(authorizationCode);
+
+            Constants.ACCESS_TOKEN = accessToken;
+        }
+        
+        public async Task<string> GetAuthorizationCodeAsync()
+        {
+            var parameters = new Dictionary<string, string>
+            {
+                {"client_id", Constants.CLIENT_ID},
+                {"response_type", "code"},
+                {"redirect_uri", Constants.REDIRECT_URI},
+                {"scope", string.Join(" ", Constants.SCOPES)}
+            };
+
+            var queryString = ToQueryString(parameters);
+
+            var authorizationUrl = $"{Constants.AUTHORIZATION_ENDPOINT}?{queryString}";
+
+            Console.WriteLine($"Please visit the following URL to authorize the application:\n{authorizationUrl}");
+
+            var httpListener = new HttpListener();
+            httpListener.Prefixes.Add(Constants.REDIRECT_URI + "/");
+            httpListener.Start();
+
+            var context = await httpListener.GetContextAsync();
+            var authorizationCode = context.Request.QueryString["code"];
+
+            var responseString = "<html><head><title>Authorization Successful</title></head><body><h1>Authorization Successful!</h1></body></html>";
+            var buffer = System.Text.Encoding.UTF8.GetBytes(responseString);
+            context.Response.ContentLength64 = buffer.Length;
+            var responseOutput = context.Response.OutputStream;
+            responseOutput.Write(buffer, 0, buffer.Length);
+            responseOutput.Close();
+            httpListener.Stop();
+
+            return authorizationCode;
+        }
+        
+        public async Task<string> GetAccessTokenAsync(string authorizationCode)
+        {
+            var httpClient = new HttpClient();
+
+            var tokenRequestBody = new Dictionary<string, string>
+            {
+                {"client_id", Constants.CLIENT_ID},
+                {"client_secret", Constants.CLIENT_SECRET},
+                {"grant_type", "authorization_code"},
+                {"redirect_uri", Constants.REDIRECT_URI},
+                {"code", authorizationCode}
+            };
+
+            var tokenRequestContent = new FormUrlEncodedContent(tokenRequestBody);
+
+            var tokenResponse = await httpClient.PostAsync(Constants.TOKEN_ENDPOINT, tokenRequestContent);
+            var tokenString = await tokenResponse.Content.ReadAsStringAsync();
+            dynamic tokenData = JsonConvert.DeserializeObject(tokenString);
+
+            return tokenData.access_token;
+        }
+        
+        public string ToQueryString(Dictionary<string, string> parameters)
+        {
+            var keyValuePairs = new List<string>();
+
+            foreach (var parameter in parameters)
+            {
+                keyValuePairs.Add($"{Uri.EscapeDataString(parameter.Key)}={Uri.EscapeDataString(parameter.Value)}");
+            }
+
+            return string.Join("&", keyValuePairs);
+        }
+        
         public async Task<List<Track>> GetMoodPlaylist(float mood)
         {
             using (var client = new HttpClient())
