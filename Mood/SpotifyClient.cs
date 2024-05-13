@@ -11,15 +11,7 @@ namespace Mood
 {
     public class SpotifyClient
     {
-        public async Task AUTH()
-        {
-            var authorizationCode = await GetAuthorizationCodeAsync();
-            var accessToken = await GetAccessTokenAsync(authorizationCode);
-
-            Constants.ACCESS_TOKEN = accessToken;
-        }
-        
-        public async Task<string> GetAuthorizationCodeAsync()
+        public string getLink()
         {
             var parameters = new Dictionary<string, string>
             {
@@ -31,17 +23,28 @@ namespace Mood
 
             var queryString = ToQueryString(parameters);
 
-            var authorizationUrl = $"{Constants.AUTHORIZATION_ENDPOINT}?{queryString}";
+            return $"{Constants.AUTHORIZATION_ENDPOINT}?{queryString}";
+        }
 
-            Console.WriteLine($"Please visit the following URL to authorize the application:\n{authorizationUrl}");
+        public async Task AUTH()
+        {
+            var authorizationCode = await GetAuthorizationCodeAsync();
+            var accessToken = await GetAccessTokenAsync(authorizationCode);
 
+            Constants.ACCESS_TOKEN = accessToken;
+        }
+        
+        public async Task<string> GetAuthorizationCodeAsync()
+        {
+            var authorizationUrl = getLink();
+            
             var httpListener = new HttpListener();
             httpListener.Prefixes.Add(Constants.REDIRECT_URI + "/");
             httpListener.Start();
 
             var context = await httpListener.GetContextAsync();
             var authorizationCode = context.Request.QueryString["code"];
-
+            
             var responseString = "<html><head><title>Authorization Successful</title></head><body><h1>Authorization Successful!</h1></body></html>";
             var buffer = System.Text.Encoding.UTF8.GetBytes(responseString);
             context.Response.ContentLength64 = buffer.Length;

@@ -10,29 +10,31 @@ namespace Mood
     {
         static async Task Main(string[] args)
         {
-            // var client = new TelegramBotClient("7015725647:AAFLN9deP1QITD5dtcTwLxWfsW31d76pcpM");
-            // client.StartReceiving(Update, Error);
-            // Console.ReadLine();
-
             SpotifyClient sp = new SpotifyClient();
-            await sp.AUTH();
-            Console.Write("Enter your mood(0.0 -> 1.0): ");
-            float mood = float.Parse(Console.ReadLine());
-            var tracks = await sp.GetMoodPlaylist(mood);
-            var pl = await sp.CreatePlaylist($"mood {mood}");
-            Console.WriteLine($"https://open.spotify.com/playlist/{pl}");
-            await sp.AddTracksToPlaylist(pl, tracks);
+            var client = new TelegramBotClient("7015725647:AAFLN9deP1QITD5dtcTwLxWfsW31d76pcpM");
+            client.StartReceiving((botClient, update, token) => Update(botClient, update, token, sp), Error);
+            
+            Console.ReadLine();
         }
 
-        async static Task Update(ITelegramBotClient botClient, Update update, CancellationToken token)
+        async static Task Update(ITelegramBotClient botClient, Update update, CancellationToken token, SpotifyClient sp)
         {
             var message = update.Message;
             if (message.Text != null)
             {
-                if (message.Text.ToLower().Contains("hello"))
+                if (message.Text.ToLower() == "/start")
                 {
-                    await botClient.SendTextMessageAsync(message.Chat.Id, "hi!");
-                    return;
+                    await botClient.SendTextMessageAsync(message.Chat.Id, $"To authenticate with Spotify click the link below:\n{sp.getLink()}");
+                    await sp.AUTH();
+                    await botClient.SendTextMessageAsync(message.Chat.Id, $"Authorization Successful!");
+                    await botClient.SendTextMessageAsync(message.Chat.Id, $"Now describe your mood on a scale from 0.0 to 1.0!");
+                }
+                else if (float.TryParse(message.Text, out float mood) && mood >= 0.0 && mood <= 1.0)
+                {
+                    var tracks = await sp.GetMoodPlaylist(mood);
+                    var pl = await sp.CreatePlaylist($"mood {mood}");
+                    await sp.AddTracksToPlaylist(pl, tracks);
+                    await botClient.SendTextMessageAsync(message.Chat.Id, $"Playlist created based on your mood:\nhttps://open.spotify.com/playlist/{pl}");
                 }
             }
         }
