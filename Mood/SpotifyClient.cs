@@ -117,31 +117,16 @@ namespace Mood
                         Valence = audioFeaturesData.valence
                     };
 
-                    if (mood >= 0.5)
+                    if (Math.Abs(newTrack.Valence - mood) < 0.05)
                     {
-                        if (newTrack.Valence >= 0.5)
-                        {
-                            tracks.Add(newTrack);
-                            Console.WriteLine($"+ {newTrack.Name} by {newTrack.Artist} {newTrack.Valence}");
-                        }
-                        else
-                        {
-                            Console.WriteLine($"- {newTrack.Name} by {newTrack.Artist} {newTrack.Valence}");
-                        }
+                        tracks.Add(newTrack);
+                        Console.WriteLine($"+ {newTrack.Name} by {newTrack.Artist} {newTrack.Valence}");
                     }
                     else
                     {
-                        if (newTrack.Valence <= 0.5)
-                        {
-                            tracks.Add(newTrack);
-                            Console.WriteLine($"+ {newTrack.Name} by {newTrack.Artist} {newTrack.Valence}");
-                        }
-                        else
-                        {
-                            Console.WriteLine($"- {newTrack.Name} by {newTrack.Artist} {newTrack.Valence}");
-                        }
+                        Console.WriteLine($"- {newTrack.Name} by {newTrack.Artist} {newTrack.Valence}");
                     }
-                    
+
                 }
 
                 return tracks;

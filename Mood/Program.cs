@@ -11,7 +11,7 @@ namespace Mood
         static async Task Main(string[] args)
         {
             SpotifyClient sp = new SpotifyClient();
-            var client = new TelegramBotClient("7015725647:AAFLN9deP1QITD5dtcTwLxWfsW31d76pcpM");
+            var client = new TelegramBotClient("6071279711:AAF75qte3X4rQnu2MRr-usON5vYSwkrjROo");
             client.StartReceiving((botClient, update, token) => Update(botClient, update, token, sp), Error);
             
             Console.ReadLine();
@@ -37,6 +37,10 @@ namespace Mood
                     await sp.AddTracksToPlaylist(pl, tracks);
                     await botClient.DeleteMessageAsync(message.Chat.Id, sentMassage.MessageId);
                     await botClient.SendTextMessageAsync(message.Chat.Id, $"Playlist created based on your mood:\nhttps://open.spotify.com/playlist/{pl}");
+                }
+                else if (message.Text.ToLower() == "/restart")
+                {
+                    await botClient.SendTextMessageAsync(message.Chat.Id, $"If you want to create another mood playlist just describe your mood again on a scale from 0.0 to 1.0 :)");
                 }
             }
         }
