@@ -11,7 +11,7 @@ namespace Mood
         static async Task Main(string[] args)
         {
             SpotifyClient sp = new SpotifyClient();
-            var client = new TelegramBotClient("6071279711:AAF75qte3X4rQnu2MRr-usON5vYSwkrjROo");
+            var client = new TelegramBotClient(Constants.TELEGRAM_BOT_TOKEN);
             client.StartReceiving((botClient, update, token) => Update(botClient, update, token, sp), Error);
             
             Console.ReadLine();
