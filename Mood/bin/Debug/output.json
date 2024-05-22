@@ -1,0 +1,7 @@
+{
+  "client_id": "114fbef63d584fc88e222362af047163",
+  "grant_type": "authorization_code",
+  "code_verifier": "PmxukXUif6Ed5sN7dpMAD1Bilmk2riBX2GlSmMNDI8Q",
+  "code": "AQAaYsw7tvN2JLLMyFhIvRYTxnhT4DyIloJJPqJ8bRrFFopA_PFbgfAT2mgZBmQ28I9XcXt3yDyo0yupsYQbk-iS7EbB-enV-gGIj3vfLcSlNchUKcTg2zvw54TwdoH_Ag_FWfwR8H7TDCx7SaZ3lyxfa-VCYBP849ZzK6lRsg0OYEuL59Fp6TtsOG0z8n7lItkiJ43t9WHuSFA2XhLvkB75NGmx9BUe1OVD-867ZsKqD7q9mgPSlvQFHPljEjKgqfkU-w",
+  "redirect_uri": "http://localhost:8888/callback"
+}
